@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "build": "hardhat clean && hardhat compile && yarn build:copy",
+    "build:copy": "copyfiles --up 3 \"artifacts/contracts/**/*.sol/*.json\" frontend/src/abis/"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
@@ -17,6 +21,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=18.0.0",
     "chai": "^4.2.0",
+    "copyfiles": "^2.4.1",
     "ethers": "^6.4.0",
     "hardhat": "^2.24.3",
     "hardhat-gas-reporter": "^1.0.8",
