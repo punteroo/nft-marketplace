@@ -2,37 +2,33 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol"; // We keep Ownable for other potential future functions
 
 /**
  * @title MiNFT
- * @dev Un contrato de NFT (ERC721) que permite al dueño mintear nuevos tokens
- * con un URI asociado (que apunta a los metadatos del NFT).
- * Hereda de ERC721URIStorage para manejar metadatos y de Ownable para la seguridad.
+ * @dev An NFT contract where any user can mint their own token.
+ * Inherits from ERC721URIStorage for metadata and Ownable for security.
  */
 contract MiNFT is ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
 
     /**
-     * @dev El constructor inicializa el NFT y transfiere la propiedad.
+     * @dev The constructor initializes the NFT and transfers ownership.
      */
     constructor() ERC721("NFTDiplo", "DNFT") Ownable(msg.sender) {}
 
     /**
-     * @notice Permite al dueño del contrato crear un nuevo NFT.
-     * @dev Llama a _safeMint que es más seguro que _mint.
-     * @param to La dirección que recibirá el nuevo NFT.
-     * @param tokenURI El enlace a los metadatos del NFT (usualmente un archivo JSON en IPFS).
-     * @return El ID del nuevo token creado.
+     * @notice Allows any user to create a new NFT for themselves.
+     * @dev The NFT is minted directly to the function caller.
+     * @param tokenURI The link to the NFT's metadata (usually a JSON file on IPFS).
+     * @return The ID of the new token created.
      */
-    function safeMint(
-        address to,
-        string memory tokenURI
-    ) public onlyOwner returns (uint256) {
+    function safeMint(string memory tokenURI) public returns (uint256) {
         uint256 newTokenId = _tokenIdCounter;
         _tokenIdCounter++;
 
-        _safeMint(to, newTokenId);
+        // Mint the new NFT to the message sender (`msg.sender`)
+        _safeMint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, tokenURI);
 
         return newTokenId;
