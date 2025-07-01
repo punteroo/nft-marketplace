@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat clean && hardhat compile && yarn build:copy",
-    "build:copy": "copyfiles --up 3 \"artifacts/contracts/**/*.sol/*.json\" frontend/src/abis/"
+    "build:copy": "copyfiles --up 3 \"artifacts/contracts/**/*.sol/*.json\" frontend/src/abis/",
+    "deploy:local": "npx hardhat run scripts/deploy.ts --network localhost"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
