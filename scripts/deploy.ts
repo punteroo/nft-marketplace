@@ -1,13 +1,10 @@
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 async function main() {
-  // Get the account that will deploy the contracts
-  const [deployer] = await hre.ethers.getSigners();
+  // Get the deployer and a second account for testing
+  const [deployer, buyerAccount] = await hre.ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
+  console.log("Test buyer account:", buyerAccount.address);
 
-  // 1. Deploy TokenDiplo (ERC20)
-  // We give an initial supply of 1,000,000 tokens to the deployer.
-  // ethers.parseEther handles the 18 decimal places automatically.
+  // 1. Deploy TokenDiplo (ERC20) with a total supply of 1,000,000
   const initialSupply = hre.ethers.parseEther("1000000");
   const TokenDiplo = await hre.ethers.getContractFactory("TokenDiplo");
   const tokenDiplo = await TokenDiplo.deploy(initialSupply);
@@ -15,8 +12,15 @@ async function main() {
   const tokenDiploAddress = await tokenDiplo.getAddress();
   console.log(`✅ TokenDiplo deployed to: ${tokenDiploAddress}`);
 
+  // --- MODIFIED LOGIC: Distribute funds equally ---
+  console.log(`\nDistributing DIP supply equally...`);
+  // Define half of the total supply to send to the buyer
+  const amountToShare = hre.ethers.parseEther("500000"); // 500,000 DIP
+  await tokenDiplo.transfer(buyerAccount.address, amountToShare);
+  console.log(`✅ Sent 500,000 DIP to ${buyerAccount.address}`);
+  // --- END OF MODIFIED LOGIC ---
+
   // 2. Deploy MiNFT (ERC721)
-  // This uses the modified contract where anyone can mint.
   const MiNFT = await hre.ethers.getContractFactory("MiNFT");
   const miNFT = await MiNFT.deploy();
   await miNFT.waitForDeployment();
@@ -24,7 +28,6 @@ async function main() {
   console.log(`✅ MiNFT deployed to: ${miNFTAddress}`);
 
   // 3. Deploy MercadoNFT (Marketplace)
-  // The marketplace constructor requires the address of the payment token (TokenDiplo).
   const MercadoNFT = await hre.ethers.getContractFactory("MercadoNFT");
   const mercadoNFT = await MercadoNFT.deploy(tokenDiploAddress);
   await mercadoNFT.waitForDeployment();
