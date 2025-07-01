@@ -1,0 +1,168 @@
+[4mGIT-REMOTE[24m(1)                                                                                                 Git Manual                                                                                                 [4mGIT-REMOTE[24m(1)
+
+[1mNAME[0m
+       git-remote - Manage set of tracked repositories
+
+[1mSYNOPSIS[0m
+       [4mgit[24m [4mremote[24m [-v | --verbose]
+       [4mgit[24m [4mremote[24m [4madd[24m [-t <branch>] [-m <master>] [-f] [--[no-]tags] [--mirror=(fetch|push)] <name> <URL>
+       [4mgit[24m [4mremote[24m [4mrename[24m [--[no-]progress] <old> <new>
+       [4mgit[24m [4mremote[24m [4mremove[24m <name>
+       [4mgit[24m [4mremote[24m [4mset-head[24m <name> (-a | --auto | -d | --delete | <branch>)
+       [4mgit[24m [4mremote[24m [4mset-branches[24m [--add] <name> <branch>...
+       [4mgit[24m [4mremote[24m [4mget-url[24m [--push] [--all] <name>
+       [4mgit[24m [4mremote[24m [4mset-url[24m [--push] <name> <newurl> [<oldurl>]
+       [4mgit[24m [4mremote[24m [4mset-url[24m [4m--add[24m [--push] <name> <newurl>
+       [4mgit[24m [4mremote[24m [4mset-url[24m [4m--delete[24m [--push] <name> <URL>
+       [4mgit[24m [4mremote[24m [-v | --verbose] [4mshow[24m [-n] <name>...
+       [4mgit[24m [4mremote[24m [4mprune[24m [-n | --dry-run] <name>...
+       [4mgit[24m [4mremote[24m [-v | --verbose] [4mupdate[24m [-p | --prune] [(<group> | <remote>)...]
+
+[1mDESCRIPTION[0m
+       Manage the set of repositories ("remotes") whose branches you track.
+
+[1mOPTIONS[0m
+       -v, --verbose
+           Be a little more verbose and show remote url after name. For promisor remotes, also show which filter ([1mblob:none [22metc.) are configured. NOTE: This must be placed between [1mremote [22mand subcommand.
+
+[1mCOMMANDS[0m
+       With no arguments, shows a list of existing remotes. Several subcommands are available to perform operations on the remotes.
+
+       [4madd[0m
+           Add a remote named <name> for the repository at <URL>. The command [1mgit fetch <name> [22mcan then be used to create and update remote-tracking branches <name>/<branch>.
+
+           With [1m-f [22moption, [1mgit fetch <name> [22mis run immediately after the remote information is set up.
+
+           With [1m--tags [22moption, [1mgit fetch <name> [22mimports every tag from the remote repository.
+
+           With [1m--no-tags [22moption, [1mgit fetch <name> [22mdoes not import tags from the remote repository.
+
+           By default, only tags on fetched branches are imported (see [1mgit-fetch[22m(1)).
+
+           With [1m-t <branch> [22moption, instead of the default glob refspec for the remote to track all branches under the [1mrefs/remotes/<name>/ [22mnamespace, a refspec to track only [1m<branch> [22mis created. You can give more than one [1m-t[0m
+           [1m<branch> [22mto track multiple branches without grabbing all branches.
+
+           With [1m-m <master> [22moption, a symbolic-ref [1mrefs/remotes/<name>/HEAD [22mis set up to point at remote’s [1m<master> [22mbranch. See also the set-head command.
+
+           When a fetch mirror is created with [1m--mirror=fetch[22m, the refs will not be stored in the [4mrefs/remotes/[24m namespace, but rather everything in [4mrefs/[24m on the remote will be directly mirrored into [4mrefs/[24m in the local repository.
+           This option only makes sense in bare repositories, because a fetch would overwrite any local commits.
+
+           When a push mirror is created with [1m--mirror=push[22m, then [1mgit push [22mwill always behave as if [1m--mirror [22mwas passed.
+
+       [4mrename[0m
+           Rename the remote named <old> to <new>. All remote-tracking branches and configuration settings for the remote are updated.
+
+           In case <old> and <new> are the same, and <old> is a file under [1m$GIT_DIR/remotes [22mor [1m$GIT_DIR/branches[22m, the remote is converted to the configuration file format.
+
+       [4mremove[24m, [4mrm[0m
+           Remove the remote named <name>. All remote-tracking branches and configuration settings for the remote are removed.
+
+       [4mset-head[0m
+           Sets or deletes the default branch (i.e. the target of the symbolic-ref [1mrefs/remotes/<name>/HEAD[22m) for the named remote. Having a default branch for a remote is not required, but allows the name of the remote to be
+           specified in lieu of a specific branch. For example, if the default branch for [1morigin [22mis set to [1mmaster[22m, then [1morigin [22mmay be specified wherever you would normally specify [1morigin/master[22m.
+
+           With [1m-d [22mor [1m--delete[22m, the symbolic ref [1mrefs/remotes/<name>/HEAD [22mis deleted.
+
+           With [1m-a [22mor [1m--auto[22m, the remote is queried to determine its [1mHEAD[22m, then the symbolic-ref [1mrefs/remotes/<name>/HEAD [22mis set to the same branch. e.g., if the remote [1mHEAD [22mis pointed at [1mnext[22m, [1mgit remote set-head origin -a [22mwill
+           set the symbolic-ref [1mrefs/remotes/origin/HEAD [22mto [1mrefs/remotes/origin/next[22m. This will only work if [1mrefs/remotes/origin/next [22malready exists; if not it must be fetched first.
+
+           Use [1m<branch> [22mto set the symbolic-ref [1mrefs/remotes/<name>/HEAD [22mexplicitly. e.g., [1mgit remote set-head origin master [22mwill set the symbolic-ref [1mrefs/remotes/origin/HEAD [22mto [1mrefs/remotes/origin/master[22m. This will only work if
+           [1mrefs/remotes/origin/master [22malready exists; if not it must be fetched first.
+
+       [4mset-branches[0m
+           Changes the list of branches tracked by the named remote. This can be used to track a subset of the available remote branches after the initial setup for a remote.
+
+           The named branches will be interpreted as if specified with the [1m-t [22moption on the [1mgit remote add [22mcommand line.
+
+           With [1m--add[22m, instead of replacing the list of currently tracked branches, adds to that list.
+
+       [4mget-url[0m
+           Retrieves the URLs for a remote. Configurations for [1minsteadOf [22mand [1mpushInsteadOf [22mare expanded here. By default, only the first URL is listed.
+
+           With [1m--push[22m, push URLs are queried rather than fetch URLs.
+
+           With [1m--all[22m, all URLs for the remote will be listed.
+
+       [4mset-url[0m
+           Changes URLs for the remote. Sets first URL for remote <name> that matches regex <oldurl> (first URL if no <oldurl> is given) to <newurl>. If <oldurl> doesn’t match any URL, an error occurs and nothing is changed.
+
+           With [1m--push[22m, push URLs are manipulated instead of fetch URLs.
+
+           With [1m--add[22m, instead of changing existing URLs, new URL is added.
+
+           With [1m--delete[22m, instead of changing existing URLs, all URLs matching regex <URL> are deleted for remote <name>. Trying to delete all non-push URLs is an error.
+
+           Note that the push URL and the fetch URL, even though they can be set differently, must still refer to the same place. What you pushed to the push URL should be what you would see if you immediately fetched from the
+           fetch URL. If you are trying to fetch from one place (e.g. your upstream) and push to another (e.g. your publishing repository), use two separate remotes.
+
+       [4mshow[0m
+           Gives some information about the remote <name>.
+
+           With [1m-n [22moption, the remote heads are not queried first with [1mgit ls-remote <name>[22m; cached information is used instead.
+
+       [4mprune[0m
+           Deletes stale references associated with <name>. By default, stale remote-tracking branches under <name> are deleted, but depending on global configuration and the configuration of the remote we might even prune local
+           tags that haven’t been pushed there. Equivalent to [1mgit fetch --prune <name>[22m, except that no new references will be fetched.
+
+           See the PRUNING section of [1mgit-fetch[22m(1) for what it’ll prune depending on various configuration.
+
+           With [1m--dry-run [22moption, report what branches would be pruned, but do not actually prune them.
+
+       [4mupdate[0m
+           Fetch updates for remotes or remote groups in the repository as defined by [1mremotes.<group>[22m. If neither group nor remote is specified on the command line, the configuration parameter remotes.default will be used; if
+           remotes.default is not defined, all remotes which do not have the configuration parameter [1mremote.<name>.skipDefaultUpdate [22mset to true will be updated. (See [1mgit-config[22m(1)).
+
+           With [1m--prune [22moption, run pruning against all the remotes that are updated.
+
+[1mDISCUSSION[0m
+       The remote configuration is achieved using the [1mremote.origin.url [22mand [1mremote.origin.fetch [22mconfiguration variables. (See [1mgit-config[22m(1)).
+
+[1mEXIT STATUS[0m
+       On success, the exit status is [1m0[22m.
+
+       When subcommands such as [4madd[24m, [4mrename[24m, and [4mremove[24m can’t find the remote in question, the exit status is [1m2[22m. When the remote already exists, the exit status is [1m3[22m.
+
+       On any other error, the exit status may be any other non-zero value.
+
+[1mEXAMPLES[0m
+       •   Add a new remote, fetch, and check out a branch from it
+
+               $ git remote
+               origin
+               $ git branch -r
+                 origin/HEAD -> origin/master
+                 origin/master
+               $ git remote add staging git://git.kernel.org/.../gregkh/staging.git
+               $ git remote
+               origin
+               staging
+               $ git fetch staging
+               ...
+               From git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging
+                * [new branch]      master     -> staging/master
+                * [new branch]      staging-linus -> staging/staging-linus
+                * [new branch]      staging-next -> staging/staging-next
+               $ git branch -r
+                 origin/HEAD -> origin/master
+                 origin/master
+                 staging/master
+                 staging/staging-linus
+                 staging/staging-next
+               $ git switch -c staging staging/master
+               ...
+
+       •   Imitate [4mgit[24m [4mclone[24m but track only selected branches
+
+               $ mkdir project.git
+               $ cd project.git
+               $ git init
+               $ git remote add -f -t master -m master origin git://example.com/git.git/
+               $ git merge origin
+
+[1mSEE ALSO[0m
+       [1mgit-fetch[22m(1) [1mgit-branch[22m(1) [1mgit-config[22m(1)
+
+[1mGIT[0m
+       Part of the [1mgit[22m(1) suite
+
+Git 2.43.0                                                                                                    01/13/2025                                                                                                 [4mGIT-REMOTE[24m(1)

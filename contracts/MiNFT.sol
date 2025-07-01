@@ -1,41 +1,40 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-// Contrato para los NFTs
-contract MiNFT is ERC721 {
-    uint256 private _numeroNFTs; // Contador de NFTs
-    mapping(uint256 => string) private _urlsNFTs; // Guarda las URLs de los NFTs
+/**
+ * @title MiNFT
+ * @dev Un contrato de NFT (ERC721) que permite al dueño mintear nuevos tokens
+ * con un URI asociado (que apunta a los metadatos del NFT).
+ * Hereda de ERC721URIStorage para manejar metadatos y de Ownable para la seguridad.
+ */
+contract MiNFT is ERC721URIStorage, Ownable {
+    uint256 private _tokenIdCounter;
 
-    // Constructor con nombre y símbolo
-    constructor() ERC721("NFTDiplo", "DNFT") {
-        _numeroNFTs = 0; // Iniciar el contador en 0
-    }
+    /**
+     * @dev El constructor inicializa el NFT y transfiere la propiedad.
+     */
+    constructor() ERC721("NFTDiplo", "DNFT") Ownable(msg.sender) {}
 
-    // Función para crear un nuevo NFT
-    function hacerNFT(
-        address paraQuien,
-        string memory url
-    ) public returns (uint256) {
-        _numeroNFTs = _numeroNFTs + 1; // Aumentar el contador
-        uint256 idNuevo = _numeroNFTs; // Obtener el nuevo ID
-        _mint(paraQuien, idNuevo); // Crear el NFT
-        _guardarURL(idNuevo, url); // Guardar la URL
-        return idNuevo;
-    }
+    /**
+     * @notice Permite al dueño del contrato crear un nuevo NFT.
+     * @dev Llama a _safeMint que es más seguro que _mint.
+     * @param to La dirección que recibirá el nuevo NFT.
+     * @param tokenURI El enlace a los metadatos del NFT (usualmente un archivo JSON en IPFS).
+     * @return El ID del nuevo token creado.
+     */
+    function safeMint(
+        address to,
+        string memory tokenURI
+    ) public onlyOwner returns (uint256) {
+        uint256 newTokenId = _tokenIdCounter;
+        _tokenIdCounter++;
 
-    // Función interna para guardar la URL
-    function _guardarURL(uint256 idNFT, string memory urlNFT) internal {
-        _urlsNFTs[idNFT] = urlNFT;
-    }
+        _safeMint(to, newTokenId);
+        _setTokenURI(newTokenId, tokenURI);
 
-    // Función para obtener la URL del NFT
-    function obtenerURL(
-        uint256 idNFT
-    ) public view returns (string memory) {
-        // Verificar si el NFT existe usando _ownerOf de ERC721
-        require(_ownerOf(idNFT) != address(0), "NFT no existe");
-        return _urlsNFTs[idNFT];
+        return newTokenId;
     }
 }
